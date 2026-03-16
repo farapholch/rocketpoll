@@ -1,6 +1,6 @@
 {
     "id": "fbeb9602-c996-43b0-ade3-c6fda89772c2",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "requiredApiVersion": "^1.41.0",
     "iconFile": "icon.png",
     "author": {
@@ -31,6 +31,9 @@
         },
         {
             "name": "persistence"
+        },
+        {
+            "name": "ui.interact"
         }
     ]
 }
