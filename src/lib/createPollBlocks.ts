@@ -7,7 +7,7 @@ function buildVoteGraph(votes: number, totalVotes: number): string {
     
     const width = 10;
     const filled = Math.round(percent * width);
-    const bar = "🟥".repeat(filled) + "⬜".repeat(width - filled);
+    const bar = "🟩".repeat(filled) + "⬜".repeat(width - filled);
     
     return bar + "  " + percentText + "%";
 }
