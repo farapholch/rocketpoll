@@ -37,7 +37,6 @@ export function createPollBlocks(
 
     // Info-rad
     const infoItems: string[] = [];
-    infoItems.push(poll.singleChoice ? "Enkel röst" : "Flerval");
     if (poll.confidential) {
         infoItems.push("🔒 Anonym");
     }
