@@ -12,7 +12,8 @@ export interface IVoteOption {
 }
 
 export interface IPoll {
-    msgId: string;
+    id: string;           // Unikt poll-ID (för persistence)
+    visibleMsgId: string; // Det synliga meddelandets ID (för uppdatering)
     uid: string;
     username: string;
     roomId: string;

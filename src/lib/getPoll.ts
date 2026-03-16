@@ -7,11 +7,11 @@ import { IPoll } from "../definition";
 
 export async function getPoll(
     persistenceRead: IPersistenceRead,
-    msgId: string
+    pollId: string
 ): Promise<IPoll | undefined> {
     const association = new RocketChatAssociationRecord(
         RocketChatAssociationModel.MISC,
-        `poll_${msgId}`
+        "poll_" + pollId
     );
     const polls = await persistenceRead.readByAssociation(association);
     if (polls && polls.length > 0) {

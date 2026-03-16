@@ -12,10 +12,10 @@ export async function schedulePollClose(
     const when = new Date(Date.now() + poll.timeLimit * 60 * 1000);
 
     await modify.getScheduler().scheduleOnce({
-        id: "poll-close-" + poll.msgId,
+        id: "poll-close-" + poll.id,
         when,
         data: {
-            msgId: poll.msgId,
+            pollId: poll.id,
             roomId: poll.roomId,
         },
     });

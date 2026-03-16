@@ -19,19 +19,19 @@ export class PollTimeoutProcessor implements IProcessor {
         http: IHttp,
         persis: IPersistence
     ): Promise<void> {
-        const { msgId } = jobContext as { msgId: string; roomId: string };
+        const { pollId } = jobContext as { pollId: string; roomId: string };
 
-        if (!msgId) {
-            this.app.getLogger().error("PollTimeoutProcessor: Missing msgId");
+        if (!pollId) {
+            this.app.getLogger().error("PollTimeoutProcessor: Missing pollId");
             return;
         }
 
-        const result = await finishPoll(read, modify, persis, msgId);
+        const result = await finishPoll(read, modify, persis, pollId);
         
         if (!result.success) {
             this.app.getLogger().warn("PollTimeoutProcessor: " + result.message);
         } else {
-            this.app.getLogger().info("PollTimeoutProcessor: Poll " + msgId + " closed by timeout");
+            this.app.getLogger().info("PollTimeoutProcessor: Poll " + pollId + " closed by timeout");
         }
     }
 }

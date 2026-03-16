@@ -8,12 +8,12 @@ import { getPoll } from "./getPoll";
 import { storePoll } from "./storePoll";
 import { createPollBlocks } from "./createPollBlocks";
 
-export async function finishPoll(
+export async function reopenPoll(
     read: IRead,
     modify: IModify,
     persistence: IPersistence,
     pollId: string,
-    user?: IUser
+    user: IUser
 ): Promise<{ success: boolean; message?: string }> {
     const poll = await getPoll(read.getPersistenceReader(), pollId);
     
@@ -21,15 +21,15 @@ export async function finishPoll(
         return { success: false, message: "Omröstningen hittades inte." };
     }
 
-    if (poll.finished) {
-        return { success: false, message: "Omröstningen är redan avslutad." };
+    if (!poll.finished) {
+        return { success: false, message: "Omröstningen är inte avslutad." };
     }
 
-    if (user && poll.uid !== user.id) {
-        return { success: false, message: "Endast skaparen kan avsluta omröstningen." };
+    if (poll.uid !== user.id) {
+        return { success: false, message: "Endast skaparen kan öppna omröstningen igen." };
     }
 
-    poll.finished = true;
+    poll.finished = false;
     await storePoll(persistence, poll);
 
     // Uppdatera meddelandet
@@ -45,13 +45,13 @@ export async function finishPoll(
                     updater.setRoom(room);
                     
                     const block = modify.getCreator().getBlockBuilder();
-                    createPollBlocks(block, poll, false);
+                    createPollBlocks(block, poll, true);
                     updater.setBlocks(block);
                     
                     await modify.getUpdater().finish(updater);
                 }
             } catch (e) {
-                // Ignorera fel vid uppdatering
+                // Ignorera fel
             }
         }
     }

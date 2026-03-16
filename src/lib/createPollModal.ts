@@ -137,9 +137,10 @@ export async function createPollModal(
         }),
     });
 
+    // Inkludera roomId i modal-ID:t
     await modify.getUiController().openModalView(
         {
-            id: "create_poll_modal",
+            id: "create_poll_modal---" + room.id,
             title: block.newPlainTextObject("Skapa omröstning"),
             close: block.newButtonElement({
                 text: block.newPlainTextObject("Avbryt"),
@@ -148,10 +149,6 @@ export async function createPollModal(
                 text: block.newPlainTextObject("Skapa"),
             }),
             blocks: block.getBlocks(),
-            // Spara room.id i state så vi kan hämta det vid submit
-            state: {
-                roomId: room.id,
-            },
         },
         { triggerId },
         user

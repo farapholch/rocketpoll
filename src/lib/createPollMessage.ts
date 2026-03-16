@@ -1,12 +1,17 @@
 import {
     IModify,
     IPersistence,
+    IRead,
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { IPoll, IPollCreateData, IVoteOption } from "../definition";
 import { createPollBlocks } from "./createPollBlocks";
 import { storePoll } from "./storePoll";
+
+function generatePollId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+}
 
 export async function createPollMessage(
     modify: IModify,
@@ -15,17 +20,16 @@ export async function createPollMessage(
     user: IUser,
     data: IPollCreateData
 ): Promise<string> {
-    const builder = modify.getCreator().startMessage();
+    const pollId = generatePollId();
     
-    // Initiera röster för varje alternativ
     const votes: IVoteOption[] = data.options.map(() => ({
         quantity: 0,
         voters: [],
     }));
 
-    // Skapa poll-objekt (msgId sätts efter meddelandet skapats)
     const poll: IPoll = {
-        msgId: "", // Sätts senare
+        id: pollId,
+        visibleMsgId: "",
         uid: user.id,
         username: user.username,
         roomId: room.id,
@@ -45,20 +49,20 @@ export async function createPollMessage(
         poll.expiresAt = new Date(Date.now() + data.timeLimit * 60 * 1000);
     }
 
-    // Bygg meddelandet
+    // Skapa meddelandet med blocks direkt
+    const builder = modify.getCreator().startMessage();
     builder.setRoom(room);
     builder.setSender(user);
     
     const block = modify.getCreator().getBlockBuilder();
     createPollBlocks(block, poll, true);
     builder.setBlocks(block);
-
-    // Skicka meddelandet och få tillbaka ID
+    
     const msgId = await modify.getCreator().finish(builder);
     
-    // Uppdatera poll med msgId och spara
-    poll.msgId = msgId;
+    // Spara msgId i poll
+    poll.visibleMsgId = msgId;
     await storePoll(persistence, poll);
 
-    return msgId;
+    return pollId;
 }

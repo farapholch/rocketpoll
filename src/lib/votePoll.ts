@@ -4,7 +4,7 @@ import {
     IRead,
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
-import { IPoll, createVoter } from "../definition";
+import { createVoter } from "../definition";
 import { getPoll } from "./getPoll";
 import { storePoll } from "./storePoll";
 import { createPollBlocks } from "./createPollBlocks";
@@ -13,11 +13,11 @@ export async function votePoll(
     read: IRead,
     modify: IModify,
     persistence: IPersistence,
-    msgId: string,
+    pollId: string,
     voteIndex: number,
     user: IUser
 ): Promise<{ success: boolean; message?: string }> {
-    const poll = await getPoll(read.getPersistenceReader(), msgId);
+    const poll = await getPoll(read.getPersistenceReader(), pollId);
     
     if (!poll) {
         return { success: false, message: "Omröstningen hittades inte." };
@@ -33,18 +33,15 @@ export async function votePoll(
 
     const voter = createVoter(user);
     
-    // Kolla om användaren redan röstat på detta alternativ
     const existingIndex = poll.votes[voteIndex].voters.findIndex(
         (v) => v.id === voter.id
     );
 
     if (existingIndex !== -1) {
-        // Ta bort röst (toggle off)
         poll.votes[voteIndex].voters.splice(existingIndex, 1);
         poll.votes[voteIndex].quantity--;
         poll.totalVotes--;
     } else {
-        // Om enkel röst: ta bort tidigare röst först
         if (poll.singleChoice) {
             for (let i = 0; i < poll.votes.length; i++) {
                 const voterIdx = poll.votes[i].voters.findIndex(
@@ -59,43 +56,36 @@ export async function votePoll(
             }
         }
         
-        // Lägg till ny röst
         poll.votes[voteIndex].voters.push(voter);
         poll.votes[voteIndex].quantity++;
         poll.totalVotes++;
     }
 
-    // Spara uppdaterad poll
     await storePoll(persistence, poll);
 
     // Uppdatera meddelandet
-    await updatePollMessage(read, modify, poll);
+    if (poll.visibleMsgId) {
+        const room = await read.getRoomReader().getById(poll.roomId);
+        if (room) {
+            try {
+                const msgReader = read.getMessageReader();
+                const originalMsg = await msgReader.getById(poll.visibleMsgId);
+                
+                if (originalMsg && originalMsg.sender) {
+                    const updater = await modify.getUpdater().message(poll.visibleMsgId, originalMsg.sender);
+                    updater.setRoom(room);
+                    
+                    const block = modify.getCreator().getBlockBuilder();
+                    createPollBlocks(block, poll, !poll.finished);
+                    updater.setBlocks(block);
+                    
+                    await modify.getUpdater().finish(updater);
+                }
+            } catch (e) {
+                // Ignorera fel vid uppdatering
+            }
+        }
+    }
 
     return { success: true };
-}
-
-async function updatePollMessage(
-    read: IRead,
-    modify: IModify,
-    poll: IPoll
-): Promise<void> {
-    const room = await read.getRoomReader().getById(poll.roomId);
-    if (!room) {
-        return;
-    }
-
-    const msgReader = read.getMessageReader();
-    const msg = await msgReader.getById(poll.msgId);
-    if (!msg) {
-        return;
-    }
-
-    const builder = await modify.getUpdater().message(poll.msgId, msg.sender);
-    builder.setRoom(room);
-    
-    const block = modify.getCreator().getBlockBuilder();
-    createPollBlocks(block, poll, !poll.finished);
-    builder.setBlocks(block);
-
-    await modify.getUpdater().finish(builder);
 }

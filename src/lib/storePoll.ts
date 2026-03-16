@@ -1,6 +1,5 @@
 import {
     IPersistence,
-    IPersistenceRead,
 } from "@rocket.chat/apps-engine/definition/accessors";
 import {
     RocketChatAssociationModel,
@@ -14,7 +13,7 @@ export async function storePoll(
 ): Promise<void> {
     const association = new RocketChatAssociationRecord(
         RocketChatAssociationModel.MISC,
-        `poll_${poll.msgId}`
+        "poll_" + poll.id
     );
     await persistence.updateByAssociation(association, poll, true);
 }
