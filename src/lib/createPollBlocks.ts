@@ -17,13 +17,13 @@ function buildVotersList(voters: { name: string }[], confidential: boolean): str
         return "";
     }
     const names = voters.map((v) => v.name).join(", ");
-    return "  _" + names + "_";
+    return "\n_" + names + "_";
 }
 
 function getRankEmoji(rank: number): string {
-    if (rank === 1) return "🥇";
-    if (rank === 2) return "🥈";
-    if (rank === 3) return "🥉";
+    if (rank === 1) return "🥇 ";
+    if (rank === 2) return "🥈 ";
+    if (rank === 3) return "🥉 ";
     return "";
 }
 
@@ -32,14 +32,9 @@ export function createPollBlocks(
     poll: IPoll,
     showVoteButtons: boolean = true
 ): void {
-    // Header
+    // Header med frågan
     block.addSectionBlock({
-        text: block.newMarkdownTextObject("🗳️  **OMRÖSTNING**"),
-    });
-    
-    // Frågan
-    block.addSectionBlock({
-        text: block.newMarkdownTextObject(poll.question),
+        text: block.newMarkdownTextObject("📊 **" + poll.question + "**"),
     });
 
     // Info-rad
@@ -51,7 +46,7 @@ export function createPollBlocks(
         infoItems.push("✅ Avslutad");
     } else if (poll.expiresAt) {
         const expiresDate = new Date(poll.expiresAt);
-        infoItems.push("⏰ Stänger " + expiresDate.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }));
+        infoItems.push("⏰ " + expiresDate.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }));
     }
     
     if (infoItems.length > 0) {
@@ -76,38 +71,36 @@ export function createPollBlocks(
         });
     }
 
-    // Alternativ
+    // Alternativ med röst-knappar
     poll.options.forEach((option, index) => {
         const voteData = poll.votes[index];
         const votes = voteData?.quantity || 0;
         
         let prefix = "";
         if (poll.finished && poll.totalVotes > 0 && rankings[index] <= 3) {
-            prefix = getRankEmoji(rankings[index]) + " ";
+            prefix = getRankEmoji(rankings[index]);
         }
         
-        // Alternativnamn med knapp
-        if (showVoteButtons && !poll.finished) {
-            block.addSectionBlock({
-                text: block.newMarkdownTextObject(prefix + "**" + option + "**"),
-                accessory: block.newButtonElement({
-                    text: block.newPlainTextObject("Rösta"),
-                    actionId: "vote_" + index,
-                    value: poll.id + "|" + index,
-                }),
-            });
-        } else {
-            block.addSectionBlock({
-                text: block.newMarkdownTextObject(prefix + "**" + option + "**"),
-            });
-        }
-        
-        // Progress bar under alternativet
+        // Bygg alternativtext
+        let optionText = prefix + "**" + option + "**";
         if (shouldShowResults) {
-            const progressText = buildVoteGraph(votes, poll.totalVotes) + " (" + votes + ")" + buildVotersList(voteData?.voters || [], poll.confidential);
-            block.addContextBlock({
+            optionText += "\n" + buildVoteGraph(votes, poll.totalVotes) + " (" + votes + ")";
+            optionText += buildVotersList(voteData?.voters || [], poll.confidential);
+        }
+        
+        block.addSectionBlock({
+            text: block.newMarkdownTextObject(optionText),
+        });
+        
+        // Rösta-knapp under varje alternativ (om inte avslutad)
+        if (showVoteButtons && !poll.finished) {
+            block.addActionsBlock({
                 elements: [
-                    block.newMarkdownTextObject(progressText),
+                    block.newButtonElement({
+                        text: block.newPlainTextObject("Rösta på " + option),
+                        actionId: "vote_" + index,
+                        value: poll.id + "|" + index,
+                    }),
                 ],
             });
         }
@@ -124,7 +117,7 @@ export function createPollBlocks(
         ],
     });
 
-    // Knappar
+    // Avsluta/Öppna igen knapp
     if (showVoteButtons) {
         if (!poll.finished) {
             block.addActionsBlock({

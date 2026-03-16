@@ -49,7 +49,7 @@ export async function createPollMessage(
         poll.expiresAt = new Date(Date.now() + data.timeLimit * 60 * 1000);
     }
 
-    // Skapa meddelandet med blocks direkt
+    // Skapa meddelandet med blocks och TRV-ikon
     const builder = modify.getCreator().startMessage();
     builder.setRoom(room);
     builder.setSender(user);
