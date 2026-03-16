@@ -3,9 +3,6 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { IRoom } from "@rocket.chat/apps-engine/definition/rooms";
-import {
-    TextObjectType,
-} from "@rocket.chat/apps-engine/definition/uikit";
 
 export async function createPollModal(
     modify: IModify,
@@ -151,6 +148,10 @@ export async function createPollModal(
                 text: block.newPlainTextObject("Skapa"),
             }),
             blocks: block.getBlocks(),
+            // Spara room.id i state så vi kan hämta det vid submit
+            state: {
+                roomId: room.id,
+            },
         },
         { triggerId },
         user

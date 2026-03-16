@@ -61,12 +61,16 @@ export class OmrostningApp extends App {
         }
 
         const user = data.user;
-        const room = data.room;
+        
+        // Hämta roomId från modal state
+        const viewState = data.view.state as Record<string, any>;
+        const roomId = viewState?.roomId || (data.room?.id);
 
-        if (!room) {
+        if (!roomId) {
+            this.getLogger().error("No roomId found in state or data.room");
             return context.getInteractionResponder().viewErrorResponse({
                 viewId: data.view.id,
-                errors: { question: "Kunde inte hitta rummet." },
+                errors: { question: "Kunde inte hitta rummet. Försök igen." },
             });
         }
 
@@ -112,9 +116,10 @@ export class OmrostningApp extends App {
             timeLimit: timeLimit > 0 ? timeLimit : undefined,
         };
 
-        // Skapa omröstningen
-        const actualRoom = await read.getRoomReader().getById(room.id);
-        if (!actualRoom) {
+        // Hämta rummet från roomId
+        const room = await read.getRoomReader().getById(roomId);
+        if (!room) {
+            this.getLogger().error("Room not found: " + roomId);
             return context.getInteractionResponder().viewErrorResponse({
                 viewId: data.view.id,
                 errors: { question: "Kunde inte hitta rummet." },
@@ -124,7 +129,7 @@ export class OmrostningApp extends App {
         const msgId = await createPollMessage(
             modify,
             persistence,
-            actualRoom,
+            room,
             user,
             pollData
         );
