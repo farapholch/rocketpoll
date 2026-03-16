@@ -1,0 +1,36 @@
+{
+    "id": "fbeb9602-c996-43b0-ade3-c6fda89772c2",
+    "version": "1.0.0",
+    "requiredApiVersion": "^1.41.0",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "Team Våffla",
+        "homepage": "https://pelleops.se",
+        "support": "https://pelleops.se"
+    },
+    "name": "Omröstning",
+    "nameSlug": "omrostning",
+    "classFile": "OmrostningApp.ts",
+    "description": "Skapa omröstningar i Snacka med enkel- eller flerval, anonymitet och tidsgränser",
+    "implements": [],
+    "permissions": [
+        {
+            "name": "slashcommand"
+        },
+        {
+            "name": "room.read"
+        },
+        {
+            "name": "message.write"
+        },
+        {
+            "name": "user.read"
+        },
+        {
+            "name": "scheduler"
+        },
+        {
+            "name": "persistence"
+        }
+    ]
+}

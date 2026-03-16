@@ -1,0 +1,20 @@
+{
+    "Skapa_omröstning": "Skapa omröstning",
+    "Fråga": "Fråga",
+    "Alternativ": "Alternativ",
+    "Röstningstyp": "Röstningstyp",
+    "Enkel_röst": "Enkel röst (ett val)",
+    "Flerval": "Flerval (flera val)",
+    "Anonymitet": "Anonymitet",
+    "Öppen": "Öppen (visa namn)",
+    "Anonym": "Anonym (dölj namn)",
+    "Visa_resultat": "Visa resultat",
+    "Alltid": "Alltid",
+    "Efter_avslut": "Efter avslut",
+    "Tidsgräns": "Tidsgräns",
+    "Ingen": "Ingen",
+    "Rösta": "Rösta",
+    "Avsluta_omröstning": "Avsluta omröstning",
+    "Avbryt": "Avbryt",
+    "Skapa": "Skapa"
+}

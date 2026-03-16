@@ -1,0 +1,20 @@
+{
+  "name": "omrostning",
+  "version": "1.0.0",
+  "description": "Skapa omröstningar i Snacka",
+  "main": "OmrostningApp.ts",
+  "scripts": {
+    "build": "tsc",
+    "package": "rc-apps package",
+    "deploy": "rc-apps deploy"
+  },
+  "devDependencies": {
+    "@rocket.chat/apps-engine": "^1.41.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@rocket.chat/icons": "^0.47.0",
+    "@rocket.chat/ui-kit": "^0.35.0"
+  }
+}
