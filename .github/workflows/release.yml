@@ -1,0 +1,65 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.3.0)'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Rocket.Chat Apps CLI
+        run: npm install -g @rocket.chat/apps-cli
+
+      - name: Build TypeScript
+        run: npx tsc
+
+      - name: Package app
+        run: rc-apps package
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Omrostning v${{ steps.version.outputs.version }}
+          body: |
+            ## Installation
+            1. Ladda ner omrostning zip-filen
+            2. Ga till Admin - Marketplace - Private Apps - Upload App
+            3. Valj zip-filen och installera
+
+            ## Kommandon
+            - /omrostning - Skapa ny omrostning
+            - /rost - Alias
+          files: dist/omrostning_${{ steps.version.outputs.version }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

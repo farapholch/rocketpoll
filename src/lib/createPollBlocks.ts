@@ -9,7 +9,7 @@ function buildVoteGraph(votes: number, totalVotes: number): string {
     const filled = Math.round(percent * width);
     const bar = "🟩".repeat(filled) + "⬜".repeat(width - filled);
     
-    return bar + "  " + percentText + "%";
+    return bar + " " + percentText + "%";
 }
 
 function buildVotersList(voters: { name: string }[], confidential: boolean): string {
@@ -20,19 +20,26 @@ function buildVotersList(voters: { name: string }[], confidential: boolean): str
     return "\n_" + names + "_";
 }
 
+function getRankEmoji(rank: number): string {
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
+    return "　"; // Empty space for alignment
+}
+
 export function createPollBlocks(
     block: BlockBuilder,
     poll: IPoll,
     showVoteButtons: boolean = true
 ): void {
-    // Tydlig header med titel
+    // Header
     block.addSectionBlock({
         text: block.newMarkdownTextObject("🗳️  **OMRÖSTNING**"),
     });
     
     // Frågan
     block.addSectionBlock({
-        text: block.newMarkdownTextObject("\n" + poll.question),
+        text: block.newMarkdownTextObject(poll.question),
     });
 
     // Info-rad
@@ -47,28 +54,36 @@ export function createPollBlocks(
         infoItems.push("⏰ Stänger " + expiresDate.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }));
     }
     
-    block.addContextBlock({
-        elements: [
-            block.newMarkdownTextObject(infoItems.join(" · ")),
-        ],
-    });
+    if (infoItems.length > 0) {
+        block.addContextBlock({
+            elements: [
+                block.newMarkdownTextObject(infoItems.join(" · ")),
+            ],
+        });
+    }
 
     block.addDividerBlock();
 
     const shouldShowResults = poll.showResults || poll.finished;
+
+    // Beräkna ranking för avslutade polls
+    let rankings: number[] = [];
+    if (poll.finished && poll.totalVotes > 0) {
+        const sortedVotes = [...poll.votes.map(v => v.quantity)].sort((a, b) => b - a);
+        rankings = poll.votes.map(v => {
+            if (v.quantity === 0) return 99;
+            return sortedVotes.indexOf(v.quantity) + 1;
+        });
+    }
 
     // Alternativ
     poll.options.forEach((option, index) => {
         const voteData = poll.votes[index];
         const votes = voteData?.quantity || 0;
         
-        // Markera vinnare
         let prefix = "";
         if (poll.finished && poll.totalVotes > 0) {
-            const maxVotes = Math.max(...poll.votes.map(v => v.quantity));
-            if (votes === maxVotes && votes > 0) {
-                prefix = "🏆 ";
-            }
+            prefix = getRankEmoji(rankings[index]) + " ";
         }
         
         let optionText = prefix + "**" + option + "**";
