@@ -101,8 +101,8 @@ function parseArguments(argsArray: string[]): { question: string; options: strin
 
 export class OmrostningCommand implements ISlashCommand {
     public command: string = "omröstning";
-    public i18nParamsExample: string = "Fråga? Alt1 Alt2";
-    public i18nDescription: string = "Skapa en omröstning";
+    public i18nParamsExample: string = "command_poll_params";
+    public i18nDescription: string = "command_poll_description";
     public providesPreview: boolean = false;
 
     public async executor(
@@ -157,8 +157,8 @@ export class OmrostningCommand implements ISlashCommand {
 
 export class RostCommand implements ISlashCommand {
     public command: string = "rost";
-    public i18nParamsExample: string = "Fråga? Alt1 Alt2";
-    public i18nDescription: string = "Skapa en omröstning";
+    public i18nParamsExample: string = "command_poll_params";
+    public i18nDescription: string = "command_poll_description";
     public providesPreview: boolean = false;
 
     public async executor(
@@ -199,8 +199,8 @@ export class RostCommand implements ISlashCommand {
 
 export class PollCommand implements ISlashCommand {
     public command: string = "poll";
-    public i18nParamsExample: string = "Question? Option1 Option2";
-    public i18nDescription: string = "Create a poll";
+    public i18nParamsExample: string = "command_poll_params";
+    public i18nDescription: string = "command_poll_description";
     public providesPreview: boolean = false;
 
     public async executor(

@@ -1,6 +1,6 @@
 {
     "id": "fbeb9602-c996-43b0-ade3-c6fda89772c2",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "requiredApiVersion": "^1.41.0",
     "iconFile": "icon.png",
     "author": {
@@ -8,10 +8,11 @@
         "homepage": "https://pelleops.se",
         "support": "https://pelleops.se"
     },
-    "name": "Omröstning",
-    "nameSlug": "omrostning",
+    "name": "RocketPoll",
+    "nameSlug": "rocketpoll",
     "classFile": "OmrostningApp.ts",
-    "description": "Matterpoll-inspired polling app with real-time updates, single or multiple choice, and time limits",
+    "description": "Matterpoll-inspired polling app with real-time updates",
+    "i18nDescription": "app_description",
     "implements": [],
     "permissions": [
         {
