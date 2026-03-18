@@ -16,7 +16,9 @@ export async function updatePoll(
     pollId: string,
     newQuestion: string,
     newOptions: string[],
-    user: IUser
+    user: IUser,
+    singleChoice?: boolean,
+    timeLimit?: number
 ): Promise<{ success: boolean; message?: string }> {
     const poll = await getPoll(read.getPersistenceReader(), pollId);
     
@@ -34,6 +36,20 @@ export async function updatePoll(
 
     // Uppdatera frågan
     poll.question = newQuestion;
+    
+    // Uppdatera inställningar om de skickades
+    if (singleChoice !== undefined) {
+        poll.singleChoice = singleChoice;
+    }
+    if (timeLimit !== undefined) {
+        poll.timeLimit = timeLimit;
+        // Uppdatera eller ta bort expiresAt baserat på ny tidsgräns
+        if (timeLimit > 0) {
+            poll.expiresAt = new Date(Date.now() + timeLimit * 60000);
+        } else {
+            poll.expiresAt = undefined;
+        }
+    }
 
     // Hantera alternativ - behåll röster för oförändrade alternativ
     const updatedVotes: IVoteOption[] = [];

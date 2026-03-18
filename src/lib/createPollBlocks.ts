@@ -30,7 +30,7 @@ export function createPollBlocks(
     if (poll.finished) metaItems.push("✅");
     else if (poll.expiresAt) {
         const expiresDate = new Date(poll.expiresAt);
-        metaItems.push("⏰ " + expiresDate.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }));
+        metaItems.push("⏰ Stänger " + expiresDate.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Stockholm" }));
     }
     if (metaItems.length > 0) {
         headerText += "  " + metaItems.join(" ");

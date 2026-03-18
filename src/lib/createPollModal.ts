@@ -8,7 +8,8 @@ export async function createPollModal(
     modify: IModify,
     user: IUser,
     room: IRoom,
-    triggerId: string
+    triggerId: string,
+    optionCount: number = 2
 ): Promise<void> {
     const block = modify.getCreator().getBlockBuilder();
 
@@ -22,37 +23,53 @@ export async function createPollModal(
         }),
     });
 
-    // Alternativ 1 och 2 (obligatoriska)
-    block.addInputBlock({
-        blockId: "poll_option_1",
-        label: block.newPlainTextObject("Alternativ 1"),
-        element: block.newPlainTextInputElement({
-            actionId: "option_1",
-            placeholder: block.newPlainTextObject("Första alternativet"),
-        }),
-    });
-
-    block.addInputBlock({
-        blockId: "poll_option_2",
-        label: block.newPlainTextObject("Alternativ 2"),
-        element: block.newPlainTextInputElement({
-            actionId: "option_2",
-            placeholder: block.newPlainTextObject("Andra alternativet"),
-        }),
-    });
-
-    // Alternativ 3-5 (valfria)
-    for (let i = 3; i <= 5; i++) {
+    // Alternativ (dynamiskt antal)
+    const maxOptions = Math.min(optionCount, 10);
+    for (let i = 1; i <= maxOptions; i++) {
+        const isRequired = i <= 2;
         block.addInputBlock({
             blockId: "poll_option_" + i,
-            optional: true,
-            label: block.newPlainTextObject("Alternativ " + i + " (valfritt)"),
+            optional: !isRequired,
+            label: block.newPlainTextObject("Alternativ " + i),
             element: block.newPlainTextInputElement({
                 actionId: "option_" + i,
-                placeholder: block.newPlainTextObject("Ytterligare alternativ"),
+                placeholder: block.newPlainTextObject(i <= 2 ? (i === 1 ? "Första alternativet" : "Andra alternativet") : "Ytterligare alternativ"),
             }),
         });
     }
+
+    // Knappar for att lagga till/ta bort alternativ
+    const actionButtons: any[] = [];
+    
+    if (optionCount < 10) {
+        actionButtons.push(
+            block.newButtonElement({
+                actionId: "add_option",
+                text: block.newPlainTextObject("+ Lägg till"),
+                value: String(optionCount + 1),
+            })
+        );
+    }
+    
+    if (optionCount > 2) {
+        actionButtons.push(
+            block.newButtonElement({
+                actionId: "remove_option",
+                text: block.newPlainTextObject("- Ta bort"),
+                value: String(optionCount - 1),
+            })
+        );
+    }
+    
+    if (actionButtons.length > 0) {
+        block.addActionsBlock({
+            blockId: "option_buttons_block",
+            elements: actionButtons,
+        });
+    }
+
+    // Divider
+    block.addDividerBlock();
 
     // Röstningstyp
     block.addInputBlock({
@@ -70,27 +87,6 @@ export async function createPollModal(
                 {
                     text: block.newPlainTextObject("Flerval (flera val)"),
                     value: "multiple",
-                },
-            ],
-        }),
-    });
-
-    // Visa resultat
-    block.addInputBlock({
-        blockId: "poll_show_results",
-        label: block.newPlainTextObject("Visa resultat"),
-        element: block.newStaticSelectElement({
-            actionId: "show_results",
-            placeholder: block.newPlainTextObject("När ska resultat visas?"),
-            initialValue: "always",
-            options: [
-                {
-                    text: block.newPlainTextObject("Alltid"),
-                    value: "always",
-                },
-                {
-                    text: block.newPlainTextObject("Efter avslut"),
-                    value: "after",
                 },
             ],
         }),
@@ -118,7 +114,7 @@ export async function createPollModal(
 
     await modify.getUiController().openModalView(
         {
-            id: "create_poll_modal---" + room.id,
+            id: "create_poll_modal---" + room.id + "---" + optionCount,
             title: block.newPlainTextObject("Skapa omröstning"),
             close: block.newButtonElement({
                 text: block.newPlainTextObject("Avbryt"),

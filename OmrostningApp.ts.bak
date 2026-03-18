@@ -24,7 +24,6 @@ import { finishPoll } from "./src/lib/finishPoll";
 import { reopenPoll } from "./src/lib/reopenPoll";
 import { getPoll } from "./src/lib/getPoll";
 import { editPollModal } from "./src/lib/editPollModal";
-import { createPollModal } from "./src/lib/createPollModal";
 import { clearVote } from "./src/lib/clearVote";
 import { updatePoll } from "./src/lib/updatePoll";
 import { IPollCreateData } from "./src/definition";
@@ -64,8 +63,7 @@ export class OmrostningApp extends App {
 
         // Hantera redigering av poll
         if (viewId.startsWith("edit_poll_modal---")) {
-            const editParts = viewId.replace("edit_poll_modal---", "").split("---");
-            const pollId = editParts[0];
+            const pollId = viewId.replace("edit_poll_modal---", "");
             
             const newQuestion = state?.edit_question?.question?.trim();
             if (!newQuestion) {
@@ -90,24 +88,16 @@ export class OmrostningApp extends App {
                 });
             }
 
-            // Hämta inställningar
-            const voteType = state?.edit_poll_type?.vote_type;
-            const singleChoice = voteType ? voteType === "single" : undefined;
-            const timeLimitStr = state?.edit_poll_time_limit?.time_limit;
-            const timeLimit = timeLimitStr ? parseInt(timeLimitStr, 10) : undefined;
-
-            await updatePoll(read, modify, persistence, pollId, newQuestion, newOptions, user, singleChoice, timeLimit);
+            await updatePoll(read, modify, persistence, pollId, newQuestion, newOptions, user);
             return { success: true };
         }
-
 
         // Hantera skapande av ny poll
         if (!viewId.startsWith("create_poll_modal---")) {
             return { success: true };
         }
 
-        const parts = viewId.replace("create_poll_modal---", "").split("---");
-        const roomId = parts[0];
+        const roomId = viewId.replace("create_poll_modal---", "");
 
         if (!roomId) {
             return context.getInteractionResponder().viewErrorResponse({
@@ -140,15 +130,15 @@ export class OmrostningApp extends App {
         }
 
         const voteType = state?.poll_type?.vote_type || "single";
-        const showResults = "always";
+        const confidential = state?.poll_confidential?.confidential || "open";
+        const showResults = state?.poll_show_results?.show_results || "always";
         const timeLimit = parseInt(state?.poll_time_limit?.time_limit || "0", 10);
-        
 
         const pollData: IPollCreateData = {
             question,
             options,
             singleChoice: voteType === "single",
-            confidential: false,
+            confidential: confidential === "anonymous",
             showResults: showResults === "always",
             timeLimit: timeLimit > 0 ? timeLimit : undefined,
         };
@@ -190,39 +180,6 @@ export class OmrostningApp extends App {
         const actionId = data.actionId;
         const user = data.user;
         const triggerId = data.triggerId;
-        // Hantera "Lägg till alternativ"-knappen
-        if (actionId === "add_option" && triggerId) {
-            const newOptionCount = parseInt(data.value || "3", 10);
-            const containerId = data.container?.id || "";
-            
-            const parts = containerId.replace("create_poll_modal---", "").split("---");
-            const roomId = parts[0];
-            
-            if (roomId) {
-                const room = await read.getRoomReader().getById(roomId);
-                if (room) {
-                    await createPollModal(modify, user, room, triggerId, newOptionCount);
-                }
-            }
-            return { success: true };
-        }
-
-        // Hantera "Ta bort alternativ"-knappen
-        if (actionId === "remove_option" && triggerId) {
-            const newOptionCount = parseInt(data.value || "2", 10);
-            const containerId = data.container?.id || "";
-            
-            const parts = containerId.replace("create_poll_modal---", "").split("---");
-            const roomId = parts[0];
-            
-            if (roomId) {
-                const room = await read.getRoomReader().getById(roomId);
-                if (room) {
-                    await createPollModal(modify, user, room, triggerId, newOptionCount);
-                }
-            }
-            return { success: true };
-        }
 
         if (actionId.startsWith("vote_")) {
             const value = data.value || "";
@@ -237,35 +194,6 @@ export class OmrostningApp extends App {
         if (actionId === "clear_vote") {
             const pollId = data.value || "";
             await clearVote(read, modify, persistence, pollId, user);
-        }
-
-        
-        // Hantera "Lägg till" i edit-modal
-        if (actionId === "edit_add_option" && triggerId) {
-            const value = data.value || "";
-            const parts = value.split("|");
-            const pollId = parts[0];
-            const newOptionCount = parseInt(parts[1] || "3", 10);
-            
-            const poll = await getPoll(read.getPersistenceReader(), pollId);
-            if (poll && poll.uid === user.id) {
-                await editPollModal(modify, user, poll, triggerId, newOptionCount);
-            }
-            return { success: true };
-        }
-
-        // Hantera "Ta bort" i edit-modal
-        if (actionId === "edit_remove_option" && triggerId) {
-            const value = data.value || "";
-            const parts = value.split("|");
-            const pollId = parts[0];
-            const newOptionCount = parseInt(parts[1] || "2", 10);
-            
-            const poll = await getPoll(read.getPersistenceReader(), pollId);
-            if (poll && poll.uid === user.id) {
-                await editPollModal(modify, user, poll, triggerId, newOptionCount);
-            }
-            return { success: true };
         }
 
         if (actionId === "edit_poll") {
