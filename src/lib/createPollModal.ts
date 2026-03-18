@@ -116,7 +116,7 @@ export async function createPollModal(
             id: "create_poll_modal---" + room.id + "---" + optionCount,
             title: block.newPlainTextObject(t("modal_title", lang)),
             close: block.newButtonElement({
-                text: block.newPlainTextObject(lang === "sv" ? "Avbryt" : "Cancel"),
+                text: block.newPlainTextObject(t("button_cancel", lang)),
             }),
             submit: block.newButtonElement({
                 text: block.newPlainTextObject(t("modal_submit", lang)),

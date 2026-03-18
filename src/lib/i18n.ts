@@ -33,6 +33,7 @@ const translations: Record<string, Record<string, string>> = {
         button_edit: "Edit",
         button_end: "End",
         button_reopen: "Reopen",
+        button_cancel: "Cancel",
         
         // Time options
         time_5min: "5 minutes",
@@ -81,6 +82,7 @@ const translations: Record<string, Record<string, string>> = {
         button_edit: "Redigera",
         button_end: "Avsluta",
         button_reopen: "Öppna igen",
+        button_cancel: "Avbryt",
         
         // Time options
         time_5min: "5 minuter",

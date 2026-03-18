@@ -117,7 +117,7 @@ export async function editPollModal(
             id: "edit_poll_modal---" + poll.id + "---" + numOptions,
             title: block.newPlainTextObject(t("edit_modal_title", lang)),
             close: block.newButtonElement({
-                text: block.newPlainTextObject(lang === "sv" ? "Avbryt" : "Cancel"),
+                text: block.newPlainTextObject(t("button_cancel", lang)),
             }),
             submit: block.newButtonElement({
                 text: block.newPlainTextObject(t("edit_modal_submit", lang)),
