@@ -24,20 +24,33 @@ function parseArguments(argsArray: string[]): { question: string; options: strin
         .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"')
         .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035'']/g, "'");
     
-    // Metod 1: Fråga utan citat, alternativ med citat
+    // Metod 1: Fråga med eller utan citat, alternativ med citat
     // Exempel: Vilket djur är bäst? "katt" "hund"
+    // Exempel: "Vilket djur är bäst?" "katt" "hund"
     const firstQuoteIndex = normalized.indexOf('"');
-    if (firstQuoteIndex > 0) {
-        const question = normalized.slice(0, firstQuoteIndex).trim();
-        const rest = normalized.slice(firstQuoteIndex);
-        const optionRegex = /"([^"]+)"/g;
-        const options: string[] = [];
-        let optMatch;
-        while ((optMatch = optionRegex.exec(rest)) !== null) {
-            options.push(optMatch[1].trim());
+    if (firstQuoteIndex >= 0) {
+        // Hitta alla citerade strängar
+        const quoteRegex = /"([^"]+)"/g;
+        const allQuoted: string[] = [];
+        let match;
+        while ((match = quoteRegex.exec(normalized)) !== null) {
+            allQuoted.push(match[1].trim());
         }
-        if (question.length > 0 && options.length >= 2) {
-            return { question, options };
+        
+        if (firstQuoteIndex === 0) {
+            // Frågan är också citerad - första är fragan, resten är alternativ
+            if (allQuoted.length >= 3) {
+                return {
+                    question: allQuoted[0],
+                    options: allQuoted.slice(1),
+                };
+            }
+        } else {
+            // Frågan är inte citerad - allt före första citatet är fragan
+            const question = normalized.slice(0, firstQuoteIndex).trim();
+            if (question.length > 0 && allQuoted.length >= 2) {
+                return { question, options: allQuoted };
+            }
         }
     }
     
@@ -107,6 +120,7 @@ export class OmrostningCommand implements ISlashCommand {
                     "Kunde inte tolka argumenten.\n\n" +
                     "**Användning:**\n" +
                     "/omröstning Fråga? \"Alt1\" \"Alt2\"\n" +
+                    "/omröstning \"Fråga?\" \"Alt1\" \"Alt2\"\n" +
                     "/omröstning Fråga? | Alt1 | Alt2\n" +
                     "\nEller skriv bara /omröstning for formulär"
                 );
