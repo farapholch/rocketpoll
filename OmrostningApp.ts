@@ -10,6 +10,7 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { App } from "@rocket.chat/apps-engine/definition/App";
 import { IAppInfo } from "@rocket.chat/apps-engine/definition/metadata";
+import { ISetting, SettingType } from "@rocket.chat/apps-engine/definition/settings";
 import {
     IUIKitResponse,
     UIKitBlockInteractionContext,
@@ -38,6 +39,21 @@ export class OmrostningApp extends App {
         configurationExtend: IConfigurationExtend,
         environmentRead: IEnvironmentRead
     ): Promise<void> {
+        // Language setting
+        await configurationExtend.settings.provideSetting({
+            id: "language",
+            type: SettingType.SELECT,
+            packageValue: "en",
+            required: true,
+            public: true,
+            i18nLabel: "Language",
+            i18nDescription: "Select the language for poll messages",
+            values: [
+                { key: "en", i18nLabel: "English" },
+                { key: "sv", i18nLabel: "Svenska" },
+            ],
+        });
+
         await configurationExtend.slashCommands.provideSlashCommand(
             new OmrostningCommand()
         );
