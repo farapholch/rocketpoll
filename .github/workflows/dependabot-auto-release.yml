@@ -1,0 +1,104 @@
+name: Auto-Release after Dependabot
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+
+      - name: Check if triggered by dependabot merge
+        id: check
+        run: |
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+          RECENT_DEPS=$(git log -5 --pretty=%B | grep -c "chore(deps)" || true)
+
+          if [[ "$LAST_COMMIT_MSG" == *"chore(deps)"* ]] && [[ "$RECENT_DEPS" -ge 1 ]]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "Dependabot merge detected, will create release"
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "Not a dependabot merge, skipping"
+          fi
+
+      - name: Setup Node.js
+        if: steps.check.outputs.should_release == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get current version and bump patch
+        if: steps.check.outputs.should_release == 'true'
+        id: version
+        run: |
+          CURRENT=$(jq -r '.version' app.json)
+          IFS='.' read -r major minor patch <<< "$CURRENT"
+          NEW_PATCH=$((patch + 1))
+          NEW_VERSION="${major}.${minor}.${NEW_PATCH}"
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumping version: $CURRENT -> $NEW_VERSION"
+
+      - name: Update app.json version
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          jq '.version = "${{ steps.version.outputs.new }}"' app.json > app.json.tmp
+          mv app.json.tmp app.json
+
+      - name: Install dependencies
+        if: steps.check.outputs.should_release == 'true'
+        run: npm install
+
+      - name: Install Rocket.Chat Apps CLI
+        if: steps.check.outputs.should_release == 'true'
+        run: npm install -g @rocket.chat/apps-cli
+
+      - name: Build TypeScript
+        if: steps.check.outputs.should_release == 'true'
+        run: npx tsc
+
+      - name: Package app
+        if: steps.check.outputs.should_release == 'true'
+        run: rc-apps package --experimental-native-compiler
+
+      - name: Commit version bump
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.new }}"
+          git push
+
+      - name: Create Release
+        if: steps.check.outputs.should_release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.new }}
+          name: RocketPoll v${{ steps.version.outputs.new }}
+          body: |
+            ## Dependency Updates
+
+            Automatisk release efter dependency-uppdateringar via Dependabot.
+
+            ## Installation
+            1. Ladda ner omrostning zip-filen
+            2. Gå till Admin → Marketplace → Private Apps → Upload App
+            3. Välj zip-filen och installera
+          files: dist/omrostning_${{ steps.version.outputs.new }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
