@@ -17,6 +17,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Pin TypeScript to 5.x: @rocket.chat/apps-engine's rc-apps CLI
+      # generates tsconfig.rc.json with moduleResolution=node10, which
+      # TS 6.0 rejects. Re-evaluate when apps-engine supports TS 6.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -28,3 +34,4 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+
