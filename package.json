@@ -14,7 +14,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@rocket.chat/icons": "^0.47.0",
+    "@rocket.chat/icons": "^0.48.0",
     "@rocket.chat/ui-kit": "^1.0.0"
   }
 }
