@@ -9,7 +9,7 @@
     "deploy": "rc-apps deploy"
   },
   "devDependencies": {
-    "@rocket.chat/apps-engine": "^1.62.0",
+    "@rocket.chat/apps-engine": "^1.63.0",
     "@types/node": "^25.9.2",
     "typescript": "^6.0.3"
   },
