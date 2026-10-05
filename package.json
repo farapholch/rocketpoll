@@ -10,11 +10,11 @@
   },
   "devDependencies": {
     "@rocket.chat/apps-engine": "^1.66.0",
-    "@types/node": "^26.6.2",
+    "@types/node": "^26.6.4",
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@rocket.chat/icons": "^0.50.0",
+    "@rocket.chat/icons": "^0.51.0",
     "@rocket.chat/ui-kit": "^1.0.0"
   }
 }
