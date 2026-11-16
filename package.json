@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "@rocket.chat/icons": "^0.52.0",
-    "@rocket.chat/ui-kit": "^1.0.0"
+    "@rocket.chat/ui-kit": "^2.0.0"
   }
 }
